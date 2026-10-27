@@ -139,3 +139,4 @@ experiments/weights/*
 experiments/save_demo/*
 experiments/tmp_save_demo/*
 ckp/
+weights/
