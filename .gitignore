@@ -134,6 +134,8 @@ dmypy.json
 # Mac
 .DS_Store
 
+.vscode
+
 # saved weights
 experiments/weights/*
 experiments/save_demo/*

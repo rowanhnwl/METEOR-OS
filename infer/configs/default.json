@@ -1,0 +1,21 @@
+{
+    "data_path" : "./",
+    "dict_name" : "dict.txt",
+    "task_num" : 1,
+    "local_batch_size" : 32,
+    "only_polar" : 0,
+    "conf_size" : 11,
+    "schema_path" : "train/schemas/default_schema.json",
+    "lnp_encoder_attention_heads" : 8,
+    "lnp_encoder_ffn_embed_dim" : 256,
+    "lnp_encoder_embed_dim" : 256,
+    "lnp_encoder_layers" : 8,
+    "loss_func" : "np_finetune_contrastive",
+    "eval_batch_size" : 256,
+    "vlib_path" : "data/vlib/exp/boosters_virtual_library_proc",
+    "deploy_model_master_dir" : "weights/deployed",
+    "deploy_weight_filename" : "weights.pt",
+    "output_dir" : "infer/out",
+    "output_append_string" : "_infer_results",
+    "include_excipients": true
+}
