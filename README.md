@@ -1,4 +1,4 @@
-# Lipid Nanoparticle Design with Composite Material Transformer (COMET)
+# Machine Enabled TransfEction OptimizeR (METEOR)
 ===================================================================
 
 ## Setup and Installation
@@ -12,8 +12,8 @@
 ### Creating the Environment
 1. Load the required modules and create a new Anaconda environment:
     ```bash
-    conda create -n comet_env python=3.10
-    source activate comet_env
+    conda create -n meteor_env python=3.10
+    source activate meteor_env
     ```
 
 2. Install dependencies:
@@ -27,37 +27,63 @@
     pip install https://github.com/dptech-corp/Uni-Core/releases/download/0.0.2/unicore-0.0.1+cu116torch1.13.1-cp310-cp310-linux_x86_64.whl
     ```
 
+## Already Preprocessed Data
+Data for some experiments have already been preprocessed and added to this repository. This includes:
+- `data/processed_data_dirs/proc_random_split`: Dataset processed into eight folds, each with a random 20% test holdout
+- `data/processed_data_dirs/proc_scaffold_split`: Dataset processed into eight folds, each with the same modulator scaffold test holdout
+- `data/processed_data_dirs/proc_full`: Dataset processed as one standalone LMDB file, for full dataset inference only (not for training)
+
 ## Data Preprocessing
 Preprocessing is done to make lmdb dataset (stored in `processed_data_dirs/`) from json files (stored in `data_json/`). Scripts for generating processed datasets from JSON files:
-- `experiments/preprocess_data_LANCE.ipynb`: Processes data for LNPs' efficacy on DC2.4 and B16-F10 cells.
-- `experiments/preprocess_data_CACO2.ipynb`: Includes CACO2 cell transfection data.
-- `experiments/preprocess_data_stability.ipynb`: Processes data for lyophilized LNPs.
+- `data/preprocess_data_for_infer.py`: Processes a set of JSON files into inferrable LMDB files.
+    - `--path`: Path to the directory of JSON files
+    - `--output_dir`: Path at which the processed LMDBs will be output
+- `data/preprocess_data_for_training.py`: Includes CACO2 cell transfection data.
+    - `--data_json_path`: Path to the individual training data JSON file (by default: `data/data_json/inhouse_lnp_booster_data_full_withLANCE_20240907.json`)
+    - `--output_path`: Path to the processed LMDB output directory
+    - `--kfold`: Number of train/test/valid folds output
+    - `--test_ratio`: Size of random test split, input as a decimal (e.g. `0.2`)
+    - `--scaffold_ids_json_path`: Path to list of separated modulator IDs used for scaffold/out-of-distribution testing (by default: `data/scaffold_ids.json`)
+    - Note: only `--test_ratio` or `--scaffold_ids_json_path` should be set, not both
 
 ## Training
-Training scripts for different models:
-- Lipid-only LNP: `experiments/training_script_LANCE_lipid_T01.py`
-- PBAE LNP: `experiments/training_script_LANCE_PBAE_T02.py`
-- Different cell types (CACO2): `experiments/training_script_caco2_T03.py`
-- Lyophilized LNP: `experiments/training_script_stability_T04.py`
+For training, run:
+```
+python train/train_grid_search.py --config <CONFIG_PATH>
+```
+There are two pre-made config files for the main training experiments:
+- `train/configs/random.json`: Training on random 20% test holdout split
+- `train/configs/scaffold.json`: Training on scaffold test holdout split
+
+Each config is set to train on the `V0` fold by default, but this can be changed by altering the `root_task_name` config variable. Additionally, the config files are set by default to train five sets of weights, each across a different random seed.
 
 ## Inference
 Run inference using pretrained models:
-- Lipid-only LNP: `experiments/inference_script_LANCE_lipid_I01.py`
-- PBAE LNP: `experiments/inference_script_LANCE_PBAE_I02.py`
+```
+python infer/deploy_infer.py --config <CONFIG_PATH>
+```
 
-Predictions are stored as .pkl files in the specified output directories. These files end with ".out.pkl" in their names. Inference results will be outputted at location: dataset_output_dir>model_name>output_filename 
+There is one pre-made config file at `infer/configs/default.json` that will run inference across the full processed dataset. Predictions are stored as .pkl files in the specified output directories. These files end with ".out.pkl" in their names. By default, the output directory is `infer/out`.
+
+## Virtual Library Generation
+Generate a virtual library of LNPs using:
+```
+python vlib/generators/parallelized_generator.py --config <CONFIG_PATH>
+```
+
+There are two pre-made virtual library generation configs:
+- `vlib/configs/sample.yaml`: Creates a much smaller virtual library, intended for testing functionality and not in silico hit selection
+- `vlib/configs/full.yaml`: Creates a much larger virtual library, spanning all component type combinations and varying molarities
 
 ## Key Files & Folders
-- `experiments/`: Contains training and preprocessing scripts.
-- `experiments/task_schemas/`: stores task schema files: dictionary file to specify key information of multiple datasets. The keys are names of the datasets, value is a dictionary containing tasks_schema_path, component_types_schema_path and np_prop_schema_path as keys
-- `experiments/data_json/`: stores raw LNP data
-- `experiments/processed_data_dirs/`: stores processed lmdb datasets for training and inference
-- `experiments/weights/`: stores pretrained COMET weights, accompanying example inference scripts to use them are `inference_script_*.py` ([download example weights here](https://drive.google.com/drive/folders/1IBz8iWrPX5Xnlb02VaTNR-7xuKuYUHZv?usp=drive_link))
+- `data/data_json/`: Stores raw LNP data
+- `data/processed_data_dirs/`: Stores processed LMDB datasets for training and inference
+- `infer/`: Stores inference scripts and config files
+- `train/`: Stores training scripts and config files
+- `vlib/`: Stores virtual library generation scripts, configs, and full component lists
+- `weights/`: Stores pretrained METEOR weights, accompanying inference script to use them is `infer/deploy_infer.py` ([CHANGE THIS LINK](https://drive.google.com/drive/folders/1IBz8iWrPX5Xnlb02VaTNR-7xuKuYUHZv?usp=drive_link))
 - `unimol/`: Core logic for model operations.
 - `ckp/`: Pretrained model weights ([download here](https://drive.google.com/drive/folders/1Ul89o6Vj93T01foKa1-898H32bJLTJkm?usp=drive_link))
-
-## Pretrained Weights
-Available pretrained weights for different models are listed under `experiments/weights/`. These can be used directly for deploying models and running inference scripts.
 
 ### Note
 Code has been test on Linux and installation is expected to take less than 2 hours on a typical computer with internet connection.

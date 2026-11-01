@@ -12,7 +12,7 @@
     "lnp_encoder_layers" : 8,
     "loss_func" : "np_finetune_contrastive",
     "eval_batch_size" : 256,
-    "vlib_path" : "data/vlib/exp/boosters_virtual_library_proc",
+    "vlib_path" : "data/processed_data_dirs/proc_full",
     "deploy_model_master_dir" : "weights/deployed",
     "deploy_weight_filename" : "weights.pt",
     "output_dir" : "infer/out",

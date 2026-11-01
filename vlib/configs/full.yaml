@@ -1,0 +1,42 @@
+---
+parallelized_generator:
+  dataset_name: "full_virtual_library"
+  output_path_and_base_name: "./data/data_json/full_virtual_library/full_virtual_library"
+  part_number: 1
+  excipient_smiles_path: "./vlib/misc/booster_smiles_info.json"
+  excipient_mode: "full" # "sample" assigns one random excipient; "full" generates one LNP per excipient
+  excipient_molar_conc: 1e-05
+  random_seed: null # Set to an integer for reproducible sampling
+  lipid_base_values: # Original lipid molar pct to vary from
+    - 0.35 
+    - 0.16
+    - 0.465
+    - 0.025
+  il_molar_config:
+    - 0.05 # Start
+    - 0.85 # End
+    - 0.2 # Step size
+  hl_molar_config:
+    - 0.05
+    - 0.85
+    - 0.1 # Step size
+  ch_molar_config:
+    - 0.045
+    - 0.855
+    - 0.1 # Step size
+  peg_molar_config:
+    - 0.005
+    - 0.105
+    - 0.1 # Step size
+  real_dataset_path: "./vlib/misc/in_house_lnp_data_overall_new_full_with_pbae_NPratios_updated_09222023_npratios.json"
+  top_k_of_real_dataset: 0.1
+  hamming_distance: 0.1
+  il_rna_wt_ratio_config:
+    - 10
+    - 20
+    - 5
+  volumetric_ratio_config:
+    - 1
+    - 3
+    - 2
+  lipid_smiles_path: "./vlib/misc/booster_lipid_smiles.json"
