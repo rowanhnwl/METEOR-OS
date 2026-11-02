@@ -144,3 +144,4 @@ ckp/
 weights/
 train/TEMP
 train/logs
+infer/out

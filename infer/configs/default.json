@@ -12,10 +12,14 @@
     "lnp_encoder_layers" : 8,
     "loss_func" : "np_finetune_contrastive",
     "eval_batch_size" : 256,
-    "vlib_path" : "data/processed_data_dirs/proc_full",
-    "deploy_model_master_dir" : "weights/deployed",
+    "infer_data_path" : "data/processed_data_dirs/proc_full",
+    "deploy_model_master_dir" : "weights/deploy",
     "deploy_weight_filename" : "weights.pt",
     "output_dir" : "infer/out",
     "output_append_string" : "_infer_results",
-    "include_excipients": true
+    "include_excipients": true,
+    "run_ensemble": true,
+    "ensemble_script": "infer/ensemble_predictions.py",
+    "ensemble_labels_json_dir": "data/data_json",
+    "ensemble_output_filename": "ensemble_results.json"
 }

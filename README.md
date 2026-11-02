@@ -34,12 +34,12 @@ Data for some experiments have already been preprocessed and added to this repos
 - `data/processed_data_dirs/proc_full`: Dataset processed as one standalone LMDB file, for full dataset inference only (not for training)
 
 ## Data Preprocessing
-Preprocessing is done to make lmdb dataset (stored in `processed_data_dirs/`) from json files (stored in `data_json/`). Scripts for generating processed datasets from JSON files:
+Preprocessing is done to make an LMDB dataset (stored in `data/processed_data_dirs/`) from JSON files (stored in `data/data_json/`). Scripts for generating processed datasets from JSON files include:
 - `data/preprocess_data_for_infer.py`: Processes a set of JSON files into inferrable LMDB files.
     - `--path`: Path to the directory of JSON files
     - `--output_dir`: Path at which the processed LMDBs will be output
 - `data/preprocess_data_for_training.py`: Includes CACO2 cell transfection data.
-    - `--data_json_path`: Path to the individual training data JSON file (by default: `data/data_json/inhouse_lnp_booster_data_full_withLANCE_20240907.json`)
+    - `--data_json_path`: Path to the individual training data JSON file (by default: `data/data_json/in_house/inhouse_lnp_booster_data_full_withLANCE_20240907.json`)
     - `--output_path`: Path to the processed LMDB output directory
     - `--kfold`: Number of train/test/valid folds output
     - `--test_ratio`: Size of random test split, input as a decimal (e.g. `0.2`)
@@ -51,11 +51,17 @@ For training, run:
 ```
 python train/train_grid_search.py --config <CONFIG_PATH>
 ```
-There are two pre-made config files for the main training experiments:
+This script will train a set of model weights for each configuration of hyperparameters specified in the config file. There are two pre-made config files for the main training experiments:
 - `train/configs/random.json`: Training on random 20% test holdout split
 - `train/configs/scaffold.json`: Training on scaffold test holdout split
 
-Each config is set to train on the `V0` fold by default, but this can be changed by altering the `root_task_name` config variable. Additionally, the config files are set by default to train five sets of weights, each across a different random seed.
+Key arguments in the config files include:
+- `root_task_name`: Path to the directory containing the processed data split to be learned (by default: `data/processed_data_dirs/proc_random_split/fold_V0`)
+- `weights_save-name`, `exp_header_name`, `infer_results_save_name`: Should all be changed to match the training task
+- `seeds`: Number of random seeds to be tried; each random seed will correspond to a different set of trained model weights (by default: 5)
+- All relevant model hyperparameters, formatted as lists so that different configurations of hyperparameters can be trained
+
+Along with trained weights, the output directory for each model will include a JSON file with the model's predictive performance on the test set.
 
 ## Inference
 Run inference using pretrained models:
@@ -63,7 +69,11 @@ Run inference using pretrained models:
 python infer/deploy_infer.py --config <CONFIG_PATH>
 ```
 
-There is one pre-made config file at `infer/configs/default.json` that will run inference across the full processed dataset. Predictions are stored as .pkl files in the specified output directories. These files end with ".out.pkl" in their names. By default, the output directory is `infer/out`.
+Key arguments found in the config file include:
+- `infer_data_path`: Path to the directory containing all processed data for the inference task (by default: `data/processed_data_dirs/proc_full`)
+- `deploy_model_master_dir`: Path to the parent directory containing all sets of pretrained weights; each set of pretrained weights must be placed in its own sub-directory (parent default: `weights/deploy/`)
+
+There is one pre-made config file at `infer/configs/default.json` that will run inference across the full processed dataset. The default output directory is `infer/out` Ensemble-5 inference results are output at `ensemble_results.json` by default in the same directory. This file includes Spearman and Pearson coefficients, and top 50% accuracy scores across the Caco-2 and HCT116 cell lines. Raw predictions are stored as .pkl files in the specified output directories. These files end with `.out.pkl` in their names.
 
 ## Virtual Library Generation
 Generate a virtual library of LNPs using:
@@ -75,15 +85,19 @@ There are two pre-made virtual library generation configs:
 - `vlib/configs/sample.yaml`: Creates a much smaller virtual library, intended for testing functionality and not in silico hit selection
 - `vlib/configs/full.yaml`: Creates a much larger virtual library, spanning all component type combinations and varying molarities
 
+By default, the virtual library will be output in `data/data_json/`.
+
 ## Key Files & Folders
 - `data/data_json/`: Stores raw LNP data
 - `data/processed_data_dirs/`: Stores processed LMDB datasets for training and inference
 - `infer/`: Stores inference scripts and config files
 - `train/`: Stores training scripts and config files
 - `vlib/`: Stores virtual library generation scripts, configs, and full component lists
-- `weights/`: Stores pretrained METEOR weights, accompanying inference script to use them is `infer/deploy_infer.py` ([CHANGE THIS LINK](https://drive.google.com/drive/folders/1IBz8iWrPX5Xnlb02VaTNR-7xuKuYUHZv?usp=drive_link))
+- `weights/`: Stores pretrained METEOR weights, accompanying inference script to use them is `infer/deploy_infer.py` ([download here](https://drive.google.com/drive/folders/1G9kCdsZvF5ObF4zA8WFJFDpCuDCaSnkg?usp=sharing))
+    - Zip and download the `weights` folder and unzip at the project root
+    - Each `.pt` file must remain in its own directory
 - `unimol/`: Core logic for model operations.
 - `ckp/`: Pretrained model weights ([download here](https://drive.google.com/drive/folders/1Ul89o6Vj93T01foKa1-898H32bJLTJkm?usp=drive_link))
 
 ### Note
-Code has been test on Linux and installation is expected to take less than 2 hours on a typical computer with internet connection.
+Code has been tested on Linux and installation is expected to take less than 2 hours on a typical computer with internet connection.
